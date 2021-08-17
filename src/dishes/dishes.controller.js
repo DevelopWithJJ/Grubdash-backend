@@ -11,10 +11,11 @@ function list(req, res) {
   res.json({ data: dishes });
 }
 
+//Check to see if are dishes has required fields, name, description, price, and image_url
 function hasRequiredFields(req, res, next) {
   const data = req.body.data || {};
   const requiredFields = ["name", "description", "price", "image_url"];
-
+  //Loop through our array of required fields and if any missing notify user of 400 error and missing field(s)
   for (const field of requiredFields) {
     if (!data[field]) {
       return next({
@@ -29,6 +30,7 @@ function hasRequiredFields(req, res, next) {
 function create(req, res, next) {
   const { data: { name, description, price, image_url } = {} } = req.body;
 
+  //If price less than zero, dish cannot be created by the user
   if (price < 0) {
     return next({
       status: 400,
@@ -47,6 +49,7 @@ function create(req, res, next) {
   res.status(201).json({ data: newDish });
 }
 
+//Function checks to see if dish exists to assist our controller functions
 function dishExists(req, res, next) {
   const { dishId } = req.params;
   const dish = dishes.find((dish) => dish.id === dishId);
@@ -66,6 +69,7 @@ function update(req, res, next) {
   const { data: { id, name, description, price, image_url } = {} } = req.body;
   const { dishId } = req.params;
   const dish = dishes.find((dish) => dish.id === dishId);
+  //If we have an id, but id does not match user id return 400 error saying dish id and route id off.
   if (id && id !== dish.id) {
     return next({
       status: 400,
@@ -73,12 +77,15 @@ function update(req, res, next) {
     });
   }
 
+  //Check to see if price is a number and if it's less than 0. If so, alert user of 400 to insert proper num.
   if (!Number.isInteger(price) || price <= 0) {
     return next({
       status: 400,
       message: `Dish must have a price that is an integer greater than 0,`,
     });
   }
+  //Following if statements check property of each dish, if any changes were made set the property
+  //to the new value
   if (dish.name !== name) {
     dish.name = name;
   }
